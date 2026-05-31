@@ -11,3 +11,11 @@ db.sqlite3
 .env
 
 .vscode/
+
+*.log
+*.sqlite3
+.venv/
+env/
+ENV/
+
+.idea/
