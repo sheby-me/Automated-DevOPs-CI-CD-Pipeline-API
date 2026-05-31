@@ -1,0 +1,9 @@
+docker ps
+
+docker ps -a
+
+docker start cicd-container
+
+docker run -d --name cicd-container -p 8000:8000 cicd-api
+
+docker build -t cicd-api .
