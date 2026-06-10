@@ -168,30 +168,20 @@ async function deployProject(){
     document.getElementById("result").innerHTML =
 
     `
-    <h3>Deployment Result</h3>
+<h3>Deployment Result</h3>
 
-    <br>
+<p><b>Status:</b>
+<span class="status">${data.status}</span></p>
 
-    <b>Status:</b>
-    <span class="status">${data.status}</span>
+<p><b>Message:</b>
+${data.message}</p>
 
-    <br><br>
+<p><b>Container ID:</b>
+${data.container_id || "N/A"}</p>
 
-    <b>Message:</b>
-    ${data.message}
-
-    <br><br>
-
-    <b>Container ID:</b>
-
-    ${data.container_id || "N/A"}
-
-    <br><br>
-
-    <b>Output:</b>
-
-    ${data.output || "No Output"}
-    `;
+<p><b>Output:</b>
+${data.output || "No Output"}</p>
+`;
 }
 
 </script>
