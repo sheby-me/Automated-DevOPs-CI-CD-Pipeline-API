@@ -4,6 +4,10 @@ import os
 import subprocess
 import json
 from datetime import datetime
+from django.shortcuts import render
+
+def home(request):
+    return render(request, "index.html")
 
 def start_pipeline(request):
 
@@ -51,7 +55,6 @@ def start_pipeline(request):
                 "message": build_process.stderr
             })
 
-        # Run container
         run_command = f"docker run -d {image_name}"
 
         run_process = subprocess.run(
@@ -62,6 +65,17 @@ def start_pipeline(request):
         )
 
         container_id = run_process.stdout.strip()
+
+        logs_command = f"docker logs {container_id}"
+
+        logs_process = subprocess.run(
+            logs_command,
+            shell=True,
+            capture_output=True,
+            text=True
+        )
+
+        output_logs = logs_process.stdout
 
         log_entry = {
             "repo": repo_name,
@@ -83,7 +97,8 @@ def start_pipeline(request):
         return JsonResponse({
             "status": "success",
             "message": "Pipeline executed successfully",
-            "container_id": container_id
+            "container_id": container_id,
+            "output": output_logs
         })
 
     except Exception as e:

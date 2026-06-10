@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Automated DevOps CI/CD Pipeline</title>
+
+    <style>
+
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+    }
+
+    body{
+
+        background-color:#0f172a;
+        color:white;
+
+        font-family:Segoe UI, sans-serif;
+
+        min-height:100vh;
+
+        display:flex;
+        justify-content:center;
+        align-items:center;
+    }
+
+    .container{
+
+        width:800px;
+
+        background:#1e293b;
+
+        padding:40px;
+
+        border-radius:15px;
+
+        box-shadow:0px 0px 25px rgba(0,0,0,0.4);
+    }
+
+    h1{
+
+        text-align:center;
+
+        margin-bottom:25px;
+
+        color:#38bdf8;
+    }
+
+    input{
+
+        width:100%;
+
+        padding:15px;
+
+        border:none;
+
+        border-radius:8px;
+
+        background:#334155;
+
+        color:white;
+
+        font-size:16px;
+    }
+
+    input:focus{
+
+        outline:none;
+
+        border:1px solid #38bdf8;
+    }
+
+    button{
+
+        width:100%;
+
+        margin-top:15px;
+
+        padding:15px;
+
+        border:none;
+
+        border-radius:8px;
+
+        background:#38bdf8;
+
+        color:#0f172a;
+
+        font-size:16px;
+
+        font-weight:bold;
+
+        cursor:pointer;
+
+        transition:0.3s;
+    }
+
+    button:hover{
+
+        background:#0ea5e9;
+    }
+
+    #result{
+
+        margin-top:25px;
+
+        padding:20px;
+
+        background:#334155;
+
+        border-radius:10px;
+
+        min-height:150px;
+
+        white-space:pre-wrap;
+
+        overflow:auto;
+    }
+
+    .status{
+
+        color:#22c55e;
+        font-weight:bold;
+    }
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>🚀 Automated DevOps CI/CD Pipeline API</h1>
+
+<p style="text-align:center;margin-bottom:25px;color:#94a3b8;">
+Deploy GitHub repositories automatically using Docker
+</p>
+    <input
+        type="text"
+        id="repoUrl"
+        placeholder="Enter GitHub Repository URL"
+    >
+
+    <button onclick="deployProject()">
+        Deploy Project
+    </button>
+
+    <div id="result">
+
+        Waiting for deployment...
+
+    </div>
+
+<script>
+
+async function deployProject(){
+
+    let repoUrl =
+        document.getElementById("repoUrl").value;
+
+    let response =
+        await fetch(
+            `/start-pipeline/?repo_url=${encodeURIComponent(repoUrl)}`
+        );
+
+    let data = await response.json();
+
+    document.getElementById("result").innerHTML =
+
+    `
+    <h3>Deployment Result</h3>
+
+    <br>
+
+    <b>Status:</b>
+    <span class="status">${data.status}</span>
+
+    <br><br>
+
+    <b>Message:</b>
+    ${data.message}
+
+    <br><br>
+
+    <b>Container ID:</b>
+
+    ${data.container_id || "N/A"}
+
+    <br><br>
+
+    <b>Output:</b>
+
+    ${data.output || "No Output"}
+    `;
+}
+
+</script>
+</div>
+</body>
+</html>
