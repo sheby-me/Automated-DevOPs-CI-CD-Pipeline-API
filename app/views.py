@@ -5,6 +5,7 @@ import subprocess
 import json
 from datetime import datetime
 from django.shortcuts import render
+from .models import Deployment
 
 def home(request):
     return render(request, "index.html")
@@ -77,22 +78,13 @@ def start_pipeline(request):
 
         output_logs = logs_process.stdout
 
-        log_entry = {
-            "repo": repo_name,
-            "status": "success",
-            "container_id": container_id,
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-
-        log_file = "logs/pipeline_logs.json"
-
-        with open(log_file, "r") as file:
-            logs = json.load(file)
-
-        logs.append(log_entry)
-
-        with open(log_file, "w") as file:
-            json.dump(logs, file, indent=4)
+        Deployment.objects.create(
+    repo_name=repo_name,
+    repo_url=repo_url,
+    status="success",
+    container_id=container_id,
+    output=output_logs
+)
 
         return JsonResponse({
             "status": "success",
