@@ -123,6 +123,24 @@
         color:#22c55e;
         font-weight:bold;
     }
+    .nav-buttons{
+    margin-top:20px;
+    display:flex;
+    justify-content:center;
+    gap:15px;
+}
+    .action-btn{
+    text-decoration:none;
+    padding:12px 20px;
+    border-radius:8px;
+    background:#2d2d2d;
+    color:white;
+    font-weight:bold;
+    transition:0.3s;
+}
+    .action-btn:hover{
+    background:#444;
+}
 
 </style>
 </head>
@@ -144,6 +162,13 @@ Deploy GitHub repositories automatically using Docker
     <button onclick="deployProject()">
         Deploy Project
     </button>
+
+    <div class="nav-buttons">
+    <a href="/admin/" class="action-btn">
+        Admin Login
+    </a>
+
+</div>
 
     <div id="result">
 
