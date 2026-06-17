@@ -1,18 +1,19 @@
 from django.http import JsonResponse
+from django.shortcuts import render
 from git import Repo
+from .models import Deployment
+
 import os
 import subprocess
-import json
-from datetime import datetime
-from django.shortcuts import render
-from .models import Deployment
+
 
 def home(request):
     return render(request, "index.html")
 
+
 def start_pipeline(request):
 
-    repo_url = request.GET.get('repo_url')
+    repo_url = request.GET.get("repo_url")
 
     if not repo_url:
         return JsonResponse({
@@ -28,35 +29,64 @@ def start_pipeline(request):
             repo_name
         )
 
-        # Clone repository
+        # Clone or Update Repository
         if not os.path.exists(clone_path):
 
             Repo.clone_from(
                 repo_url,
-                clone_path
+                clone_path,
+                depth=1
             )
 
-        # Docker image name
+        else:
+
+            repo = Repo(clone_path)
+            repo.remotes.origin.pull()
+
+        # Docker Image Name
         image_name = repo_name.lower()
 
-        # Build Docker image
-        build_command = f"docker build -t {image_name} {clone_path}"
-
-        build_process = subprocess.run(
-            build_command,
+        # Check if Docker Image Exists
+        check_image = subprocess.run(
+            f"docker image inspect {image_name}",
             shell=True,
             capture_output=True,
             text=True
         )
 
-        if build_process.returncode != 0:
+        # Build Image Only If Not Found
+        if check_image.returncode != 0:
 
-            return JsonResponse({
-                "status": "error",
-                "message": build_process.stderr
-            })
+            build_command = (
+                f"docker build -t {image_name} {clone_path}"
+            )
 
-        run_command = f"docker run -d {image_name}"
+            build_process = subprocess.run(
+                build_command,
+                shell=True,
+                capture_output=True,
+                text=True
+            )
+
+            if build_process.returncode != 0:
+
+                return JsonResponse({
+                    "status": "error",
+                    "message": build_process.stderr
+                })
+
+        # Remove Existing Container
+        subprocess.run(
+            f"docker rm -f {image_name}",
+            shell=True,
+            capture_output=True,
+            text=True
+        )
+
+        # Run Container
+        run_command = (
+            f"docker run -d --name {image_name} {image_name}"
+        )
 
         run_process = subprocess.run(
             run_command,
@@ -65,12 +95,18 @@ def start_pipeline(request):
             text=True
         )
 
+        if run_process.returncode != 0:
+
+            return JsonResponse({
+                "status": "error",
+                "message": run_process.stderr
+            })
+
         container_id = run_process.stdout.strip()
 
-        logs_command = f"docker logs {container_id}"
-
+        # Get Logs
         logs_process = subprocess.run(
-            logs_command,
+            f"docker logs {container_id}",
             shell=True,
             capture_output=True,
             text=True
@@ -78,13 +114,14 @@ def start_pipeline(request):
 
         output_logs = logs_process.stdout
 
+        # Save Deployment Record
         Deployment.objects.create(
-    repo_name=repo_name,
-    repo_url=repo_url,
-    status="success",
-    container_id=container_id,
-    output=output_logs
-)
+            repo_name=repo_name,
+            repo_url=repo_url,
+            status="success",
+            container_id=container_id,
+            output=output_logs
+        )
 
         return JsonResponse({
             "status": "success",
