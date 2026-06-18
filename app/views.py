@@ -2,7 +2,6 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from git import Repo
 from .models import Deployment
-
 import os
 import subprocess
 
@@ -43,10 +42,9 @@ def start_pipeline(request):
             repo = Repo(clone_path)
             repo.remotes.origin.pull()
 
-        # Docker Image Name
         image_name = repo_name.lower()
 
-        # Check if Docker Image Exists
+
         check_image = subprocess.run(
             f"docker image inspect {image_name}",
             shell=True,
@@ -54,7 +52,6 @@ def start_pipeline(request):
             text=True
         )
 
-        # Build Image Only If Not Found
         if check_image.returncode != 0:
 
             build_command = (
@@ -75,7 +72,6 @@ def start_pipeline(request):
                     "message": build_process.stderr
                 })
 
-        # Remove Existing Container
         subprocess.run(
             f"docker rm -f {image_name}",
             shell=True,
@@ -83,7 +79,6 @@ def start_pipeline(request):
             text=True
         )
 
-        # Run Container
         run_command = (
             f"docker run -d --name {image_name} {image_name}"
         )
@@ -104,7 +99,7 @@ def start_pipeline(request):
 
         container_id = run_process.stdout.strip()
 
-        # Get Logs
+        
         logs_process = subprocess.run(
             f"docker logs {container_id}",
             shell=True,
@@ -114,7 +109,7 @@ def start_pipeline(request):
 
         output_logs = logs_process.stdout
 
-        # Save Deployment Record
+        
         Deployment.objects.create(
             repo_name=repo_name,
             repo_url=repo_url,
